@@ -1,0 +1,11 @@
+{
+  "name": "core-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Panel de control del homelab en tiempo real (WebSockets). Monorepo web + api.",
+  "workspaces": ["apps/web", "apps/api"],
+  "scripts": {
+    "dev": "echo 'run apps/web y apps/api'",
+    "lint": "echo lint", "test": "echo test", "build": "echo build"
+  }
+}

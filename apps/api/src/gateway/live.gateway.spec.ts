@@ -1,13 +1,23 @@
+import { PassThrough } from "stream";
+
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { LIVE_NAMESPACE, type ServiceState } from "@core-dashboard/shared";
 import * as jwt from "jsonwebtoken";
 import { io, type Socket as ClientSocket } from "socket.io-client";
 
+import { DOCKER_CLIENT } from "../containers/docker.client";
 import { GatewayModule } from "./gateway.module";
 import { LiveGateway } from "./live.gateway";
 
 const SECRET = "gateway-test-secret";
+
+// GatewayModule arrastra ContainersModule: dockerode se sustituye por un fake vacío.
+const fakeDocker = {
+  listContainers: async () => [],
+  getContainer: () => ({ inspect: async () => Promise.reject(new Error("no existe")) }),
+  getEvents: async () => new PassThrough(),
+};
 
 function serviceState(service: string): ServiceState {
   return {
@@ -31,7 +41,10 @@ describe("LiveGateway (integración)", () => {
 
   beforeAll(async () => {
     process.env.AUTH_JWT_SECRET = SECRET;
-    const moduleRef = await Test.createTestingModule({ imports: [GatewayModule] }).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [GatewayModule] })
+      .overrideProvider(DOCKER_CLIENT)
+      .useValue(fakeDocker)
+      .compile();
     app = moduleRef.createNestApplication();
     await app.listen(0);
     const address = app.getHttpServer().address();

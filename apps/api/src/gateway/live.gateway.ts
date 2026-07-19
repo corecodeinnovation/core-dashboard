@@ -1,4 +1,4 @@
-import { Inject } from "@nestjs/common";
+import { Inject, OnModuleInit } from "@nestjs/common";
 import {
   ConnectedSocket,
   MessageBody,
@@ -20,6 +20,7 @@ import type { Namespace, Socket } from "socket.io";
 
 import { TokenService } from "../auth/token.service";
 import { createWsAuthMiddleware } from "../auth/ws-auth.middleware";
+import { ContainersService } from "../containers/containers.service";
 import { STATE_SNAPSHOT_PROVIDER, type StateSnapshotProvider } from "./snapshot.provider";
 
 type LiveNamespace = Namespace<
@@ -52,14 +53,20 @@ function corsOrigins(): string[] | boolean {
   pingInterval: 10_000,
   pingTimeout: 5_000,
 })
-export class LiveGateway implements OnGatewayInit {
+export class LiveGateway implements OnGatewayInit, OnModuleInit {
   @WebSocketServer()
   server!: LiveNamespace;
 
   constructor(
     private readonly tokens: TokenService,
     @Inject(STATE_SNAPSHOT_PROVIDER) private readonly snapshots: StateSnapshotProvider,
+    private readonly containers: ContainersService,
   ) {}
+
+  onModuleInit(): void {
+    // Cada evento Docker del stack termina en el room del servicio afectado.
+    this.containers.onUpdate((update) => this.publishUpdate(update));
+  }
 
   afterInit(namespace: LiveNamespace): void {
     namespace.use(createWsAuthMiddleware(this.tokens));
@@ -92,8 +99,10 @@ export class LiveGateway implements OnGatewayInit {
     return this.snapshots.getSnapshot();
   }
 
-  // Broadcast selectivo: solo el room del servicio afectado (lo usa containers, 1-04).
+  // Broadcast selectivo: solo el room del servicio afectado.
   publishUpdate(update: ServiceUpdate): void {
+    // Un evento Docker puede llegar antes de que el servidor WS esté inicializado.
+    if (!this.server) return;
     this.server.to(serviceRoom(update.service)).emit("state:update", update);
   }
 

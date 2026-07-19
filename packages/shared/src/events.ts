@@ -30,9 +30,15 @@ export interface ServiceUpdate {
   occurredAt: string;
 }
 
+// Clave única de un servicio en el portfolio: los nombres cortos de compose
+// (db, redis) se repiten entre proyectos; la clave incluye el proyecto.
+export function serviceKey(project: string, service: string): string {
+  return `${project}.${service}`;
+}
+
 // Rooms por servicio: broadcast selectivo solo a quien mira ese servicio.
-export function serviceRoom(service: string): string {
-  return `service:${service}`;
+export function serviceRoom(serviceKey: string): string {
+  return `service:${serviceKey}`;
 }
 
 export interface ServerToClientEvents {

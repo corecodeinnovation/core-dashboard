@@ -3,7 +3,11 @@ FROM node:22-alpine AS build
 WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/
-RUN npm ci -w apps/web
+COPY packages/shared/package.json packages/shared/
+# -w packages/shared para instalar también sus devDeps (typescript) y poder compilarlo.
+RUN npm ci -w apps/web -w packages/shared
+COPY packages/shared ./packages/shared
+RUN npm run build -w packages/shared
 COPY apps/web ./apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build -w apps/web

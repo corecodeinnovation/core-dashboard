@@ -1,0 +1,37 @@
+/* Core Code Innovation — design tokens (marca).
+   Fuente única de verdad de color/tipografía. Copia de ../BRAND.tokens.css.
+   Derivados del logo oficial: cubo fragmentado, naranja + pizarra + carbón. */
+:root {
+  /* Marca — naranja (firma) */
+  --cci-orange: #FF5A1F;       /* acento principal, CTA, "core" */
+  --cci-orange-600: #E24500;   /* hover/pressed */
+  --cci-amber: #FF8A3D;        /* highlight / segundo naranja */
+
+  /* Neutros — pizarra (los cubos) */
+  --cci-slate: #8A93A0;        /* gris frío de los bloques */
+  --cci-slate-600: #5A6472;    /* pizarra oscura */
+
+  /* Superficies — carbón (dark-first) */
+  --cci-ink: #0B0B0E;          /* fondo casi negro */
+  --cci-surface: #16171B;      /* tarjetas / paneles */
+  --cci-surface-2: #1E2024;    /* elementos elevados */
+  --cci-line: #2A2D33;         /* bordes / divisores */
+
+  /* Texto */
+  --cci-text: #F0F0F0;
+  --cci-muted: #9AA0A8;
+
+  /* Estados */
+  --cci-success: #22C55E;
+  --cci-warn: #F59E0B;
+  --cci-danger: #EF4444;
+
+  /* Tipografía */
+  --cci-font-sans: "Inter", system-ui, sans-serif;      /* UI y texto */
+  --cci-font-display: "Poppins", "Inter", sans-serif;   /* titulares tipo "Core Code" */
+  --cci-font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Forma */
+  --cci-radius: 12px;
+  --cci-shadow: 0 8px 30px rgba(0,0,0,.35);
+}

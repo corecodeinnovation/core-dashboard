@@ -1,0 +1,36 @@
+@import "../styles/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Las fuentes se cargan self-hosted con next/font (layout.tsx expone
+   --font-inter/--font-poppins/--font-jbmono); aquí se enlazan a los tokens. */
+:root {
+  --cci-font-sans: var(--font-inter), system-ui, sans-serif;
+  --cci-font-display: var(--font-poppins), var(--font-inter), sans-serif;
+  --cci-font-mono: var(--font-jbmono), ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--cci-ink);
+    color: var(--cci-text);
+    font-family: var(--cci-font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--cci-orange);
+    color: var(--cci-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--cci-orange);
+    outline-offset: 2px;
+  }
+}

@@ -4,3 +4,5 @@ dist/
 coverage/
 package-lock.json
 next-env.d.ts
+# Copia literal de BRAND.tokens.css (fuente única de verdad del brand del portfolio).
+apps/web/src/styles/tokens.css

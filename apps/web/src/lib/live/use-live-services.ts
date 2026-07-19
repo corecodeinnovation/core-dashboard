@@ -17,8 +17,14 @@ export type ConnectionStatus = "connecting" | "live" | "reconnecting";
 
 type LiveSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
+// Resolución de la URL del gateway:
+// 1. NEXT_PUBLIC_API_WS_URL si está definida (se inyecta en build).
+// 2. Dev: el web corre en 3002 y el gateway en 3004.
+// 3. Producción: mismo origen — el túnel rutea dash.../socket.io/* al api,
+//    así no hay CORS ni URLs horneadas en la imagen.
 function wsBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_WS_URL ?? "http://localhost:3004";
+  if (process.env.NEXT_PUBLIC_API_WS_URL) return process.env.NEXT_PUBLIC_API_WS_URL;
+  return process.env.NODE_ENV === "development" ? "http://localhost:3004" : "";
 }
 
 // Cliente en vivo del gateway: reconexión con backoff exponencial (nativa de

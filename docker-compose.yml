@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        # Sin definir ⇒ demo local (localhost:3004). En el host del túnel,
+        # poner NEXT_PUBLIC_API_WS_URL= (vacía) en .env ⇒ mismo origen.
+        NEXT_PUBLIC_API_WS_URL: ${NEXT_PUBLIC_API_WS_URL-http://localhost:3004}
     # 3002 en el host: slot de core-dashboard (web) en la plantilla de puertos del portfolio
     # (el túnel de Cloudflare apunta a 3002 → dash.corecodeinnovation.com).
     ports: ["3002:3000"]

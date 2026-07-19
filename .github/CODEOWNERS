@@ -1,0 +1,8 @@
+# Code owners de Core Code Innovation.
+# Con la protección de rama activa, se requiere la revisión del owner para
+# fusionar cualquier cambio en `main`.
+#
+# Reemplaza el owner por tu usuario de GitHub o un team de la organización:
+#   *  @gitsegovia
+#   *  @corecodeinnovation/maintainers
+*  @gitsegovia

@@ -15,17 +15,20 @@ Parte del portfolio técnico de Core Code Innovation.
 ---
 
 ## Qué es
+
 El proyecto que une el ecosistema: estado en vivo de contenedores y hosts vía
 **WebSocket**, métricas (Prometheus), live logs, alertas (dispara ops-notify-bot),
 acciones con auth por roles (cci-auth-service) y jobs pesados delegados a taskforge.
 
 ## Estructura
+
 ```
 apps/web   Next.js (UI en tiempo real)
 apps/api   NestJS (WebSocket gateway + REST)
 ```
 
 ## Quickstart
+
 ```bash
 cp .env.example .env
 npm install
@@ -33,6 +36,7 @@ npm install
 ```
 
 ## Features
+
 - [ ] WS gateway con auth de handshake
 - [ ] Rooms por host + heartbeat + reconexión
 - [ ] Live log viewer con backpressure

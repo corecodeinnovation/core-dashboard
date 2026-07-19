@@ -3,9 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "description": "Panel de control del homelab en tiempo real (WebSockets). Monorepo web + api.",
-  "workspaces": ["apps/web", "apps/api"],
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
   "scripts": {
-    "dev": "echo 'run apps/web y apps/api'",
-    "lint": "echo lint", "test": "echo test", "build": "echo build"
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
+    "lint": "npm run lint --workspaces --if-present && prettier --check .",
+    "format": "prettier --write .",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "prettier": "^3.9.5"
   }
 }

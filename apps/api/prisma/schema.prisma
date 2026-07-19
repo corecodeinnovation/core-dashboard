@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+  // native = máquina de desarrollo; musl = runtime Alpine del Dockerfile (amd64 y arm64).
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ContainerEventType {
+  START
+  DIE
+  RESTART
+  HEALTH_STATUS
+}
+
+// Evento del ciclo de vida de un contenedor (desde la API de Docker);
+// alimenta el timeline del dashboard y el watcher de alertas.
+model ContainerEvent {
+  id            String             @id @default(cuid())
+  containerId   String
+  containerName String
+  type          ContainerEventType
+  detail        String? // exit code, estado de health, etc.
+  occurredAt    DateTime
+  createdAt     DateTime           @default(now())
+
+  @@index([containerName, occurredAt])
+  @@index([occurredAt]) // purga de registros >30 días
+  @@map("container_events")
+}
+
+enum MetricKind {
+  CPU
+  MEMORY
+  NETWORK_RX
+  NETWORK_TX
+}
+
+// Promedio de 5 minutos por contenedor y métrica (rollup desde Prometheus);
+// respaldo del endpoint REST de histórico. Retención 30 días.
+model MetricRollup {
+  id            String     @id @default(cuid())
+  containerName String
+  metric        MetricKind
+  avgValue      Float
+  bucketStart   DateTime // inicio de la ventana de 5 min
+  createdAt     DateTime   @default(now())
+
+  @@unique([containerName, metric, bucketStart])
+  @@index([bucketStart]) // purga de registros >30 días
+  @@map("metric_rollups")
+}
+
+// Acción ejecutada sobre el sistema. Los usuarios viven en cci-auth-service:
+// aquí solo se guardan el sub y el email del claim del JWT.
+model AuditLog {
+  id        String   @id @default(cuid())
+  userSub   String
+  userEmail String
+  role      String
+  action    String
+  target    String
+  result    String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// Umbrales y toggles de alertas, editables solo por admin.
+model AlertSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  enabled   Boolean  @default(true)
+  threshold Float?
+  updatedBy String? // sub del admin que editó
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("alert_settings")
+}
+
+enum JobRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// Referencia a un job demo disparado en taskforge (el estado real vive allá).
+model JobRun {
+  id          String       @id @default(cuid())
+  externalId  String       @unique // id del job en taskforge
+  status      JobRunStatus @default(PENDING)
+  requestedBy String // sub del JWT solicitante
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("job_runs")
+}

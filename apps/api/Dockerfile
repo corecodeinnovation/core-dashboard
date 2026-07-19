@@ -10,10 +10,16 @@ RUN npm run build -w apps/api
 FROM node:22-alpine
 WORKDIR /repo
 ENV NODE_ENV=production
+# Prisma necesita OpenSSL para sus engines en Alpine.
+RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
 RUN npm ci -w apps/api --omit=dev && npm cache clean --force
+COPY apps/api/prisma ./apps/api/prisma
+# Genera el client aquí (root) para que el runtime como `node` solo necesite lectura.
+RUN cd apps/api && npx prisma generate
 COPY --from=build --chown=node:node /repo/apps/api/dist ./apps/api/dist
 USER node
 EXPOSE 3000
-CMD ["node", "apps/api/dist/main.js"]
+# Aplica las migraciones pendientes antes de arrancar: la imagen es autosuficiente.
+CMD ["sh", "-c", "cd apps/api && npx prisma migrate deploy && node dist/main.js"]

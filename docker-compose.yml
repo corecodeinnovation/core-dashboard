@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        # Sin definir ⇒ demo local (localhost:3004). En el host del túnel,
+        # poner NEXT_PUBLIC_API_WS_URL= (vacía) en .env ⇒ mismo origen.
+        NEXT_PUBLIC_API_WS_URL: ${NEXT_PUBLIC_API_WS_URL-http://localhost:3004}
     # 3002 en el host: slot de core-dashboard (web) en la plantilla de puertos del portfolio
     # (el túnel de Cloudflare apunta a 3002 → dash.corecodeinnovation.com).
     ports: ["3002:3000"]
@@ -30,6 +34,10 @@ services:
     volumes:
       # Solo lectura: estado/eventos/logs de contenedores. Nunca escritura directa.
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    # El socket es root:root 660 dentro del contenedor y el proceso corre como
+    # node (1000): se agrega el grupo dueño del socket para poder conectarse.
+    # gid 0 en Docker Desktop; en un host Linux poner el gid del grupo docker.
+    group_add: ["${DOCKER_GROUP_GID:-0}"]
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }

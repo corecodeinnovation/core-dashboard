@@ -29,6 +29,7 @@
     "coverageDirectory": "../coverage"
   },
   "dependencies": {
+    "@core-dashboard/shared": "0.1.0",
     "@nestjs/common": "^10.4.0",
     "@prisma/client": "^5.20.0",
     "prisma": "^5.20.0",
@@ -36,15 +37,22 @@
     "@nestjs/platform-express": "^10.4.22",
     "@nestjs/platform-socket.io": "^10.4.22",
     "@nestjs/websockets": "^10.4.22",
+    "dockerode": "^4.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^3.2.2",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.8.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@nestjs/cli": "^10.4.0",
     "@nestjs/testing": "^10.4.22",
+    "@types/dockerode": "^3.3.31",
     "@types/express": "^4.17.25",
     "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.10",
+    "socket.io-client": "^4.8.0",
     "@types/node": "^26.1.1",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",

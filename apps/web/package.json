@@ -10,9 +10,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@core-dashboard/shared": "0.1.0",
     "next": "^15.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",

@@ -30,6 +30,10 @@ services:
     volumes:
       # Solo lectura: estado/eventos/logs de contenedores. Nunca escritura directa.
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    # El socket es root:root 660 dentro del contenedor y el proceso corre como
+    # node (1000): se agrega el grupo dueño del socket para poder conectarse.
+    # gid 0 en Docker Desktop; en un host Linux poner el gid del grupo docker.
+    group_add: ["${DOCKER_GROUP_GID:-0}"]
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }

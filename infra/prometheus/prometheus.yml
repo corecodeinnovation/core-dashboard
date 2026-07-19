@@ -8,3 +8,8 @@ scrape_configs:
   - job_name: cadvisor
     static_configs:
       - targets: ["cadvisor:8080"]
+    metric_relabel_configs:
+      # Los labels de compose traen hashes y rutas absolutas del host; se descartan.
+      # Para identificar contenedores alcanzan name/image + service/project de compose.
+      - regex: "container_label_com_docker_compose_(config_hash|image|oneoff|container_number|depends_on|project_config_files|project_working_dir|version)"
+        action: labeldrop

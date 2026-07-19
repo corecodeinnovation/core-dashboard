@@ -88,6 +88,9 @@ services:
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
+      # El socket va aparte y rw: connect() sobre un unix socket necesita escritura;
+      # sin él cAdvisor no resuelve nombres de contenedor (labels name/image vacíos).
+      - /var/run/docker.sock:/var/run/docker.sock
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     healthcheck:

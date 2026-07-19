@@ -3,7 +3,11 @@ FROM node:22-alpine AS build
 WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
-RUN npm ci -w apps/api
+COPY packages/shared/package.json packages/shared/
+# -w packages/shared para instalar también sus devDeps (typescript) y poder compilarlo.
+RUN npm ci -w apps/api -w packages/shared
+COPY packages/shared ./packages/shared
+RUN npm run build -w packages/shared
 COPY apps/api ./apps/api
 RUN npm run build -w apps/api
 
@@ -14,10 +18,12 @@ ENV NODE_ENV=production
 RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
+COPY packages/shared/package.json packages/shared/
 RUN npm ci -w apps/api --omit=dev && npm cache clean --force
 COPY apps/api/prisma ./apps/api/prisma
 # Genera el client aquí (root) para que el runtime como `node` solo necesite lectura.
 RUN cd apps/api && npx prisma generate
+COPY --from=build --chown=node:node /repo/packages/shared/dist ./packages/shared/dist
 COPY --from=build --chown=node:node /repo/apps/api/dist ./apps/api/dist
 USER node
 EXPOSE 3000

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { LogViewer } from "@/components/log-viewer";
 import { MetricsPanel } from "@/components/metrics-panel";
+import { RestartButton } from "@/components/restart-button";
 
 type PanelTab = "metrics" | "logs";
 
@@ -25,13 +26,16 @@ export function ContainerPanel({ container, onClose }: { container: string; onCl
             </TabButton>
           </nav>
         </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-cci px-2 py-1 font-mono text-xs text-cci-muted transition-colors hover:bg-cci-surface-2 hover:text-cci-text"
-        >
-          cerrar ✕
-        </button>
+        <div className="flex items-center gap-2">
+          <RestartButton container={container} />
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-cci px-2 py-1 font-mono text-xs text-cci-muted transition-colors hover:bg-cci-surface-2 hover:text-cci-text"
+          >
+            cerrar ✕
+          </button>
+        </div>
       </header>
       {tab === "metrics" ? (
         <MetricsPanel container={container} />

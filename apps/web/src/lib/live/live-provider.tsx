@@ -11,6 +11,8 @@ import {
 } from "@core-dashboard/shared";
 import { io, type Socket } from "socket.io-client";
 
+import { useAuth } from "@/lib/auth/auth-provider";
+
 import { applyUpdate, sortServices } from "./state";
 
 export type ConnectionStatus = "connecting" | "live" | "reconnecting";
@@ -44,10 +46,13 @@ function wsBaseUrl(): string {
 // re-suscripción en cada connect (al reconectar el socket es nuevo y los
 // rooms del server se pierden).
 export function LiveProvider({ children }: { children: ReactNode }) {
+  const { accessToken } = useAuth();
   const [socket, setSocket] = useState<LiveSocket | null>(null);
   const [services, setServices] = useState<ServiceState[]>([]);
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
 
+  // Reconecta (nuevo socket) cuando cambia el token: login/logout/renovación
+  // deben quedar reflejados en el handshake, no solo en las llamadas REST.
   useEffect(() => {
     const live: LiveSocket = io(`${wsBaseUrl()}${LIVE_NAMESPACE}`, {
       transports: ["websocket", "polling"],
@@ -55,6 +60,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
       reconnectionDelay: 1_000,
       reconnectionDelayMax: 30_000,
       randomizationFactor: 0.5,
+      auth: accessToken ? { token: accessToken } : {},
     });
 
     const resync = async (): Promise<void> => {
@@ -80,7 +86,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     return () => {
       live.disconnect();
     };
-  }, []);
+  }, [accessToken]);
 
   return (
     <LiveContext.Provider value={{ socket, services, status }}>{children}</LiveContext.Provider>

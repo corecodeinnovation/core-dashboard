@@ -97,6 +97,12 @@ export class ContainersService implements OnModuleInit, OnModuleDestroy, StateSn
     }
   }
 
+  // Restart real vía Docker API (RF-07). El llamador (ActionsService) ya
+  // validó RBAC, protegidos y rate limiting; acá solo se ejecuta.
+  async restart(containerName: string): Promise<void> {
+    await this.docker.getContainer(containerName).restart();
+  }
+
   private isManaged(labels: Record<string, string> | undefined): boolean {
     if (!labels?.[COMPOSE_SERVICE]) return false;
     const filter = process.env.COMPOSE_PROJECTS;

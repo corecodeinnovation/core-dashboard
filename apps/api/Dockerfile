@@ -9,6 +9,11 @@ RUN npm ci -w apps/api -w packages/shared
 COPY packages/shared ./packages/shared
 RUN npm run build -w packages/shared
 COPY apps/api ./apps/api
+# El postinstall de @prisma/client corrió en el paso anterior sin el schema
+# (se copia recién acá), así que el client generado no tiene nuestros modelos.
+# Hay que regenerarlo explícitamente antes de compilar: nest build type-checkea
+# contra @prisma/client (p. ej. el enum MetricKind).
+RUN cd apps/api && npx prisma generate
 RUN npm run build -w apps/api
 
 FROM node:22-alpine

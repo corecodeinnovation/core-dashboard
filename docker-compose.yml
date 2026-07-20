@@ -45,6 +45,10 @@ services:
       # Alertas (RF-06): sin estas dos, NotifyBotClient loguea un warn y no manda nada.
       NOTIFY_BOT_URL: ${NOTIFY_BOT_URL:-http://ops-notify-bot:3001}
       NOTIFY_BOT_WEBHOOK_SECRET: ${NOTIFY_BOT_WEBHOOK_SECRET:-}
+      # Jobs pesados (RF-08): taskforge NO tiene alias en cci-net, es taskforge-api-1.
+      TASKFORGE_URL: ${TASKFORGE_URL:-http://taskforge-api-1:3000}
+      TASKFORGE_CLIENT_ID: ${TASKFORGE_CLIENT_ID:-}
+      TASKFORGE_CLIENT_SECRET: ${TASKFORGE_CLIENT_SECRET:-}
     volumes:
       # Solo lectura: estado/eventos/logs de contenedores. Nunca escritura directa.
       - /var/run/docker.sock:/var/run/docker.sock:ro

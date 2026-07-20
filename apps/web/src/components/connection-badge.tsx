@@ -1,4 +1,4 @@
-import type { ConnectionStatus } from "@/lib/live/use-live-services";
+import type { ConnectionStatus } from "@/lib/live/live-provider";
 
 const LABELS: Record<ConnectionStatus, { text: string; dot: string }> = {
   connecting: { text: "conectando…", dot: "bg-cci-slate" },

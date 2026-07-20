@@ -11,6 +11,6 @@ import { createDockerClient, DOCKER_CLIENT } from "./docker.client";
     // El snapshot de resync sale del inventario real de contenedores.
     { provide: STATE_SNAPSHOT_PROVIDER, useExisting: ContainersService },
   ],
-  exports: [ContainersService, STATE_SNAPSHOT_PROVIDER],
+  exports: [ContainersService, STATE_SNAPSHOT_PROVIDER, DOCKER_CLIENT],
 })
 export class ContainersModule {}

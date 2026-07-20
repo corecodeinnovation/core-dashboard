@@ -84,6 +84,18 @@ export class ContainersService implements OnModuleInit, OnModuleDestroy, StateSn
     };
   }
 
+  // Un contenedor del stack, por nombre exacto; null si no existe o no es gestionado.
+  async findManagedByName(name: string): Promise<ServiceState | null> {
+    const containers = await this.docker.listContainers({ all: true });
+    const match = containers.find((c) => this.isManaged(c.Labels) && c.Names.includes(`/${name}`));
+    if (!match) return null;
+    try {
+      return await this.inspectState(match.Id);
+    } catch {
+      return null;
+    }
+  }
+
   private isManaged(labels: Record<string, string> | undefined): boolean {
     if (!labels?.[COMPOSE_SERVICE]) return false;
     const filter = process.env.COMPOSE_PROJECTS;

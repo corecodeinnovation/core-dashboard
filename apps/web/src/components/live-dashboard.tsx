@@ -2,13 +2,28 @@
 
 import { useEffect, useState } from "react";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { ConnectionBadge } from "@/components/connection-badge";
+import { ContainerPanel } from "@/components/container-panel";
 import { ServiceCard } from "@/components/service-card";
-import { useLiveServices } from "@/lib/live/use-live-services";
+import { LiveProvider, useLive } from "@/lib/live/live-provider";
 
 export function LiveDashboard() {
-  const { services, status } = useLiveServices();
+  const [queryClient] = useState(() => new QueryClient());
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LiveProvider>
+        <DashboardContent />
+      </LiveProvider>
+    </QueryClientProvider>
+  );
+}
+
+function DashboardContent() {
+  const { services, status } = useLive();
   const [now, setNow] = useState(() => Date.now());
+  const [selected, setSelected] = useState<string | null>(null);
 
   // Tick de 1 s: los uptimes corren solos sin esperar eventos del server.
   useEffect(() => {
@@ -34,9 +49,21 @@ export function LiveDashboard() {
         <ConnectionBadge status={status} />
       </header>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {selected && (
+        <div className="mt-6">
+          <ContainerPanel container={selected} onClose={() => setSelected(null)} />
+        </div>
+      )}
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((state) => (
-          <ServiceCard key={state.name} state={state} now={now} />
+          <ServiceCard
+            key={state.name}
+            state={state}
+            now={now}
+            selected={state.name === selected}
+            onSelect={() => setSelected(state.name === selected ? null : state.name)}
+          />
         ))}
       </div>
     </section>

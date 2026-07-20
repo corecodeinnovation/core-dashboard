@@ -2,6 +2,7 @@ import { Inject, OnModuleInit } from "@nestjs/common";
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
@@ -11,6 +12,7 @@ import {
   LIVE_NAMESPACE,
   serviceRoom,
   type ClientToServerEvents,
+  type LogsAck,
   type ServerToClientEvents,
   type ServiceUpdate,
   type SocketData,
@@ -21,6 +23,7 @@ import type { Namespace, Socket } from "socket.io";
 import { TokenService } from "../auth/token.service";
 import { createWsAuthMiddleware } from "../auth/ws-auth.middleware";
 import { ContainersService } from "../containers/containers.service";
+import { LogsService } from "../logs/logs.service";
 import { STATE_SNAPSHOT_PROVIDER, type StateSnapshotProvider } from "./snapshot.provider";
 
 type LiveNamespace = Namespace<
@@ -53,7 +56,7 @@ function corsOrigins(): string[] | boolean {
   pingInterval: 10_000,
   pingTimeout: 5_000,
 })
-export class LiveGateway implements OnGatewayInit, OnModuleInit {
+export class LiveGateway implements OnGatewayInit, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer()
   server!: LiveNamespace;
 
@@ -61,7 +64,13 @@ export class LiveGateway implements OnGatewayInit, OnModuleInit {
     private readonly tokens: TokenService,
     @Inject(STATE_SNAPSHOT_PROVIDER) private readonly snapshots: StateSnapshotProvider,
     private readonly containers: ContainersService,
+    private readonly logs: LogsService,
   ) {}
+
+  handleDisconnect(socket: LiveSocket): void {
+    // Cortar todos los streams de logs del cliente: nada queda colgado.
+    this.logs.destroyForSocket(socket.id);
+  }
 
   onModuleInit(): void {
     // Cada evento Docker del stack termina en el room del servicio afectado.
@@ -97,6 +106,23 @@ export class LiveGateway implements OnGatewayInit, OnModuleInit {
   @SubscribeMessage("state:resync")
   async onResync(): Promise<StateSnapshot> {
     return this.snapshots.getSnapshot();
+  }
+
+  // Logs en vivo por contenedor (RF-04); el backpressure vive en LogsService.
+  @SubscribeMessage("logs:subscribe")
+  async onLogsSubscribe(
+    @ConnectedSocket() socket: LiveSocket,
+    @MessageBody() request: unknown,
+  ): Promise<LogsAck> {
+    return this.logs.subscribe(socket, request);
+  }
+
+  @SubscribeMessage("logs:unsubscribe")
+  onLogsUnsubscribe(
+    @ConnectedSocket() socket: LiveSocket,
+    @MessageBody() request: unknown,
+  ): LogsAck {
+    return this.logs.unsubscribe(socket.id, request);
   }
 
   // Broadcast selectivo: solo el room del servicio afectado.

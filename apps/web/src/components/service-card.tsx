@@ -14,12 +14,36 @@ const TONE_TEXT: Record<StatusTone, string> = {
   down: "text-cci-danger",
 };
 
-export function ServiceCard({ state, now }: { state: ServiceState; now: number }) {
+export function ServiceCard({
+  state,
+  now,
+  selected,
+  onSelect,
+}: {
+  state: ServiceState;
+  now: number;
+  selected: boolean;
+  onSelect: () => void;
+}) {
   const tone = statusTone(state.status, state.health);
   const uptime = formatUptime(state.startedAt, now);
 
   return (
-    <article className="flex flex-col gap-3 rounded-cci border border-cci-line bg-cci-surface p-4 transition-colors hover:bg-cci-surface-2">
+    <article
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`flex cursor-pointer flex-col gap-3 rounded-cci border p-4 transition-colors hover:bg-cci-surface-2 ${
+        selected ? "border-cci-orange bg-cci-surface-2" : "border-cci-line bg-cci-surface"
+      }`}
+    >
       <header className="flex items-center justify-between gap-2">
         <h3 className="flex min-w-0 items-center gap-2 font-display text-sm font-semibold">
           <span className={`h-2 w-2 shrink-0 rounded-full ${TONE_DOT[tone]}`} aria-hidden />

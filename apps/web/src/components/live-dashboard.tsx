@@ -7,15 +7,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectionBadge } from "@/components/connection-badge";
 import { ContainerPanel } from "@/components/container-panel";
 import { ServiceCard } from "@/components/service-card";
+import { UserMenu } from "@/components/user-menu";
+import { AuthProvider } from "@/lib/auth/auth-provider";
 import { LiveProvider, useLive } from "@/lib/live/live-provider";
 
 export function LiveDashboard() {
   const [queryClient] = useState(() => new QueryClient());
   return (
     <QueryClientProvider client={queryClient}>
-      <LiveProvider>
-        <DashboardContent />
-      </LiveProvider>
+      <AuthProvider>
+        <LiveProvider>
+          <DashboardContent />
+        </LiveProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
@@ -46,7 +50,10 @@ function DashboardContent() {
               : "esperando estado del homelab…"}
           </p>
         </div>
-        <ConnectionBadge status={status} />
+        <div className="flex items-center gap-3">
+          <UserMenu />
+          <ConnectionBadge status={status} />
+        </div>
       </header>
 
       {selected && (

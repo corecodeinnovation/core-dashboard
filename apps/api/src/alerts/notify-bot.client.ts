@@ -6,13 +6,28 @@ export interface ContainerDownEvent {
   exitCode?: number;
 }
 
+export interface ContainerRestartedEvent {
+  type: "container_restarted";
+  container: string;
+}
+
+type WebhookEvent = ContainerDownEvent | ContainerRestartedEvent;
+
 // Cliente del webhook de ops-notify-bot. Fire-and-forget desde el punto de
 // vista del llamador: nunca lanza, solo loguea si Telegram/el bot fallan.
 @Injectable()
 export class NotifyBotClient {
   private readonly logger = new Logger(NotifyBotClient.name);
 
-  async sendContainerDown(event: ContainerDownEvent): Promise<void> {
+  sendContainerDown(event: Omit<ContainerDownEvent, "type">): Promise<void> {
+    return this.send({ type: "container_down", ...event });
+  }
+
+  sendContainerRestarted(event: Omit<ContainerRestartedEvent, "type">): Promise<void> {
+    return this.send({ type: "container_restarted", ...event });
+  }
+
+  private async send(event: WebhookEvent): Promise<void> {
     const baseUrl = process.env.NOTIFY_BOT_URL;
     const secret = process.env.NOTIFY_BOT_WEBHOOK_SECRET;
     if (!baseUrl || !secret) {

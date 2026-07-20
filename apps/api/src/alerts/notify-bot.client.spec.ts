@@ -18,11 +18,10 @@ describe("NotifyBotClient", () => {
     process.env = env;
   });
 
-  it("postea al webhook con el secreto y el payload correctos", async () => {
+  it("sendContainerDown postea el webhook con el secreto y el payload correctos", async () => {
     fetchMock.mockResolvedValue({ ok: true, status: 202 } as Response);
 
     await new NotifyBotClient().sendContainerDown({
-      type: "container_down",
       container: "core-dashboard-worker-1",
       exitCode: 137,
     });
@@ -38,11 +37,23 @@ describe("NotifyBotClient", () => {
     });
   });
 
+  it("sendContainerRestarted postea un payload de tipo distinto, sin exitCode", async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 202 } as Response);
+
+    await new NotifyBotClient().sendContainerRestarted({ container: "core-dashboard-worker-1" });
+
+    const [, init] = fetchMock.mock.calls[0]! as [URL, RequestInit];
+    expect(JSON.parse(init.body as string)).toEqual({
+      type: "container_restarted",
+      container: "core-dashboard-worker-1",
+    });
+  });
+
   it("sin NOTIFY_BOT_URL/SECRET configurados, no llama a fetch (no revienta)", async () => {
     delete process.env.NOTIFY_BOT_URL;
     delete process.env.NOTIFY_BOT_WEBHOOK_SECRET;
 
-    await new NotifyBotClient().sendContainerDown({ type: "container_down", container: "x" });
+    await new NotifyBotClient().sendContainerDown({ container: "x" });
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -51,7 +62,7 @@ describe("NotifyBotClient", () => {
     fetchMock.mockResolvedValue({ ok: false, status: 500 } as Response);
 
     await expect(
-      new NotifyBotClient().sendContainerDown({ type: "container_down", container: "x" }),
+      new NotifyBotClient().sendContainerDown({ container: "x" }),
     ).resolves.toBeUndefined();
   });
 
@@ -59,7 +70,7 @@ describe("NotifyBotClient", () => {
     fetchMock.mockRejectedValue(new Error("ECONNREFUSED"));
 
     await expect(
-      new NotifyBotClient().sendContainerDown({ type: "container_down", container: "x" }),
+      new NotifyBotClient().sendContainerDown({ container: "x" }),
     ).resolves.toBeUndefined();
   });
 });

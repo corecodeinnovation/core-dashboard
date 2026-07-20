@@ -4,9 +4,9 @@ import type { AlertSetting } from "@prisma/client";
 import type { AuthenticatedRequest } from "../auth/auth.guard";
 import { RequireRole } from "../auth/roles.decorator";
 import { PrismaService } from "../prisma/prisma.service";
-import { CONTAINER_DOWN_ALERT_KEY } from "./alerts.service";
+import { CONTAINER_DOWN_ALERT_KEY, CONTAINER_RESTARTED_ALERT_KEY } from "./alerts.service";
 
-const KNOWN_KEYS = new Set([CONTAINER_DOWN_ALERT_KEY]);
+const KNOWN_KEYS = new Set([CONTAINER_DOWN_ALERT_KEY, CONTAINER_RESTARTED_ALERT_KEY]);
 
 interface UpdateAlertSettingBody {
   enabled?: boolean;
@@ -21,22 +21,21 @@ export class AlertsController {
 
   @Get()
   async list(): Promise<AlertSetting[]> {
-    // La categoría container_down existe siempre para el admin, aunque nadie
-    // la haya tocado todavía (default: activada — ver AlertsService.isEnabled).
+    // Cada categoría conocida existe siempre para el admin, aunque nadie la
+    // haya tocado todavía (default: activada — ver AlertsService.isEnabled).
     const existing = await this.prisma.alertSetting.findMany({ orderBy: { key: "asc" } });
-    if (existing.some((s) => s.key === CONTAINER_DOWN_ALERT_KEY)) return existing;
-    return [
-      ...existing,
-      {
+    const missing = [...KNOWN_KEYS]
+      .filter((key) => !existing.some((s) => s.key === key))
+      .map((key): AlertSetting => ({
         id: "",
-        key: CONTAINER_DOWN_ALERT_KEY,
+        key,
         enabled: true,
         threshold: null,
         updatedBy: null,
         createdAt: new Date(0),
         updatedAt: new Date(0),
-      },
-    ];
+      }));
+    return [...existing, ...missing].sort((a, b) => a.key.localeCompare(b.key));
   }
 
   @Patch(":key")

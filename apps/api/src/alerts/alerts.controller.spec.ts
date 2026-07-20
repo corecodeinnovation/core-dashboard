@@ -6,7 +6,7 @@ import request from "supertest";
 import { AuthModule } from "../auth/auth.module";
 import { PrismaService } from "../prisma/prisma.service";
 import { AlertsController } from "./alerts.controller";
-import { CONTAINER_DOWN_ALERT_KEY } from "./alerts.service";
+import { CONTAINER_DOWN_ALERT_KEY, CONTAINER_RESTARTED_ALERT_KEY } from "./alerts.service";
 
 const SECRET = "alerts-controller-test-secret";
 
@@ -50,7 +50,7 @@ describe("AlertsController", () => {
       .expect(403);
   });
 
-  it("GET con rol admin ⇒ incluye el default de container_down si no hay fila", async () => {
+  it("GET con rol admin ⇒ incluye los defaults de ambas categorías si no hay filas", async () => {
     prisma.alertSetting.findMany.mockResolvedValueOnce([]);
     const res = await request(app.getHttpServer())
       .get("/alerts/settings")
@@ -58,6 +58,30 @@ describe("AlertsController", () => {
       .expect(200);
     expect(res.body).toEqual([
       expect.objectContaining({ key: CONTAINER_DOWN_ALERT_KEY, enabled: true }),
+      expect.objectContaining({ key: CONTAINER_RESTARTED_ALERT_KEY, enabled: true }),
+    ]);
+  });
+
+  it("GET no duplica una categoría que ya tiene fila en la base", async () => {
+    prisma.alertSetting.findMany.mockResolvedValueOnce([
+      {
+        id: "1",
+        key: CONTAINER_DOWN_ALERT_KEY,
+        enabled: false,
+        threshold: null,
+        updatedBy: "u1",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+    const res = await request(app.getHttpServer())
+      .get("/alerts/settings")
+      .set("Authorization", `Bearer ${tokenFor(["ADMIN"])}`)
+      .expect(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body).toEqual([
+      expect.objectContaining({ key: CONTAINER_DOWN_ALERT_KEY, enabled: false }),
+      expect.objectContaining({ key: CONTAINER_RESTARTED_ALERT_KEY, enabled: true }),
     ]);
   });
 

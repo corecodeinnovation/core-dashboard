@@ -2,16 +2,21 @@
 
 import { useEffect, useState } from "react";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { ConnectionBadge } from "@/components/connection-badge";
-import { LogViewer } from "@/components/log-viewer";
+import { ContainerPanel } from "@/components/container-panel";
 import { ServiceCard } from "@/components/service-card";
 import { LiveProvider, useLive } from "@/lib/live/live-provider";
 
 export function LiveDashboard() {
+  const [queryClient] = useState(() => new QueryClient());
   return (
-    <LiveProvider>
-      <DashboardContent />
-    </LiveProvider>
+    <QueryClientProvider client={queryClient}>
+      <LiveProvider>
+        <DashboardContent />
+      </LiveProvider>
+    </QueryClientProvider>
   );
 }
 
@@ -46,7 +51,7 @@ function DashboardContent() {
 
       {selected && (
         <div className="mt-6">
-          <LogViewer container={selected} onClose={() => setSelected(null)} />
+          <ContainerPanel container={selected} onClose={() => setSelected(null)} />
         </div>
       )}
 

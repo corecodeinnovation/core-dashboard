@@ -24,10 +24,18 @@ export interface StateSnapshot {
   generatedAt: string;
 }
 
+export type ContainerLifecycleAction =
+  "start" | "die" | "stop" | "kill" | "restart" | "pause" | "unpause" | "health_status";
+
 export interface ServiceUpdate {
   service: string;
   state: ServiceState;
   occurredAt: string;
+  // Acción cruda de Docker que disparó el update — la usa, por ejemplo,
+  // el módulo de alertas para distinguir "murió" de un simple cambio de salud.
+  action: ContainerLifecycleAction;
+  // Solo presente en "die": exit code del proceso principal, si Docker lo reportó.
+  exitCode?: number;
 }
 
 // Clave única de un servicio en el portfolio: los nombres cortos de compose

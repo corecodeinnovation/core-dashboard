@@ -50,7 +50,9 @@ function DashboardContent() {
       </header>
 
       {selected && (
-        <div className="mt-6">
+        // sticky: al hacer scroll se fija arriba del viewport y el grid de
+        // abajo sigue scrolleando por detrás (z-10 + fondo opaco del panel).
+        <div className="sticky top-4 z-10 mt-6">
           <ContainerPanel container={selected} onClose={() => setSelected(null)} />
         </div>
       )}

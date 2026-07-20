@@ -112,11 +112,13 @@ describe("LiveGateway (integración)", () => {
       service: "web",
       state: serviceState("web"),
       occurredAt: new Date().toISOString(),
+      action: "start",
     });
     gateway.publishUpdate({
       service: "api",
       state: serviceState("api"),
       occurredAt: new Date().toISOString(),
+      action: "start",
     });
 
     await new Promise((resolve) => setTimeout(resolve, 200));
@@ -134,6 +136,7 @@ describe("LiveGateway (integración)", () => {
       service: "api",
       state: serviceState("api"),
       occurredAt: new Date().toISOString(),
+      action: "start",
     });
 
     await new Promise((resolve) => setTimeout(resolve, 200));

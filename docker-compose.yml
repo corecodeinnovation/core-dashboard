@@ -31,6 +31,24 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dashboard}:${POSTGRES_PASSWORD:-dashboard}@db:5432/${POSTGRES_DB:-dashboard}
       REDIS_URL: redis://redis:6379
       PROMETHEUS_URL: http://prometheus:9090
+      DOCKER_SOCKET: /var/run/docker.sock
+      COMPOSE_PROJECTS: ${COMPOSE_PROJECTS:-}
+      PROTECTED_PROJECTS: ${PROTECTED_PROJECTS:-core-dashboard,cci-auth-service}
+      # Validación de JWT: JWKS de cci-auth-service (RS256) + iss verificado.
+      # Alcanzable por nombre solo porque `api` está en la red compartida cci-net (abajo).
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://cci-auth-service:3000}
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:-http://cci-auth-service:3000/.well-known/jwks.json}
+      AUTH_ISSUER: ${AUTH_ISSUER:-https://auth.corecodeinnovation.com}
+      # Solo dev/tests: dejar vacío en producción, nunca hardcodear un secreto acá.
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3002}
+      # Alertas (RF-06): sin estas dos, NotifyBotClient loguea un warn y no manda nada.
+      NOTIFY_BOT_URL: ${NOTIFY_BOT_URL:-http://ops-notify-bot:3001}
+      NOTIFY_BOT_WEBHOOK_SECRET: ${NOTIFY_BOT_WEBHOOK_SECRET:-}
+      # Jobs pesados (RF-08): taskforge NO tiene alias en cci-net, es taskforge-api-1.
+      TASKFORGE_URL: ${TASKFORGE_URL:-http://taskforge-api-1:3000}
+      TASKFORGE_CLIENT_ID: ${TASKFORGE_CLIENT_ID:-}
+      TASKFORGE_CLIENT_SECRET: ${TASKFORGE_CLIENT_SECRET:-}
     volumes:
       # Solo lectura: estado/eventos/logs de contenedores. Nunca escritura directa.
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -38,6 +56,12 @@ services:
     # node (1000): se agrega el grupo dueño del socket para poder conectarse.
     # gid 0 en Docker Desktop; en un host Linux poner el gid del grupo docker.
     group_add: ["${DOCKER_GROUP_GID:-0}"]
+    # Red compartida del portfolio (ya la usan cci-auth-service y ops-notify-bot):
+    # sin esto, AUTH_SERVICE_URL/NOTIFY_BOT_URL no resuelven aunque estén bien
+    # configuradas. `default` mantiene la comunicación con db/redis/prometheus.
+    networks:
+      default: {}
+      cci-net: {}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -111,3 +135,9 @@ services:
 volumes:
   dashdb: {}
   prometheus-data: {}
+
+networks:
+  # Ya existe en el host (creada al levantar cci-auth-service/ops-notify-bot):
+  # docker network create cci-net
+  cci-net:
+    external: true

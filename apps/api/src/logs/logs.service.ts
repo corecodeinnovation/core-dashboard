@@ -102,8 +102,11 @@ export class LogsService implements OnModuleDestroy {
     const splitter = new LogLineSplitter((line) => session.push(line));
     const parser = new DockerFrameParser((source, payload) => splitter.push(source, payload));
     stream.on("data", (chunk: Buffer) => parser.push(chunk));
+    // error: corte abrupto, no hay nada más que drenar de una fuente rota.
     stream.on("error", () => session.close());
-    stream.on("end", () => session.close());
+    // end: el contenedor dejó de loguear (o murió) en condiciones normales;
+    // se termina de drenar lo que ya está en cola antes de cerrar.
+    stream.on("end", () => session.end());
     session.attachSource({
       pause: () => stream.pause(),
       resume: () => stream.resume(),

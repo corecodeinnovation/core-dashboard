@@ -4,6 +4,7 @@ import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nest
 import {
   serviceKey,
   type ContainerHealth,
+  type ContainerLifecycleAction,
   type ContainerStatus,
   type ServiceState,
   type ServiceUpdate,
@@ -18,7 +19,7 @@ const COMPOSE_SERVICE = "com.docker.compose.service";
 const COMPOSE_PROJECT = "com.docker.compose.project";
 
 // Eventos del ciclo de vida que disparan un update al room del servicio.
-const LIFECYCLE_EVENTS = new Set([
+const LIFECYCLE_EVENTS: ReadonlySet<ContainerLifecycleAction> = new Set([
   "start",
   "die",
   "stop",
@@ -96,6 +97,12 @@ export class ContainersService implements OnModuleInit, OnModuleDestroy, StateSn
     }
   }
 
+  // Restart real vía Docker API (RF-07). El llamador (ActionsService) ya
+  // validó RBAC, protegidos y rate limiting; acá solo se ejecuta.
+  async restart(containerName: string): Promise<void> {
+    await this.docker.getContainer(containerName).restart();
+  }
+
   private isManaged(labels: Record<string, string> | undefined): boolean {
     if (!labels?.[COMPOSE_SERVICE]) return false;
     const filter = process.env.COMPOSE_PROJECTS;
@@ -165,14 +172,15 @@ export class ContainersService implements OnModuleInit, OnModuleDestroy, StateSn
       return;
     }
     // `health_status: healthy` viene con sufijo: se compara solo el prefijo.
-    const action = event.Action?.split(":")[0]?.trim();
+    const action = event.Action?.split(":")[0]?.trim() as ContainerLifecycleAction | undefined;
     const attributes = event.Actor?.Attributes ?? {};
     if (!action || !LIFECYCLE_EVENTS.has(action) || !this.isManaged(attributes)) return;
-    void this.publishFromEvent(event, attributes);
+    void this.publishFromEvent(event, action, attributes);
   }
 
   private async publishFromEvent(
     event: DockerEvent,
+    action: ContainerLifecycleAction,
     attributes: Record<string, string>,
   ): Promise<void> {
     const id = event.Actor?.ID ?? event.id;
@@ -198,6 +206,11 @@ export class ContainersService implements OnModuleInit, OnModuleDestroy, StateSn
       service: serviceKey(state.project, state.service),
       state,
       occurredAt: new Date().toISOString(),
+      action,
+      // Docker reporta el exit code como atributo string solo en `die`.
+      ...(action === "die" && attributes.exitCode !== undefined
+        ? { exitCode: Number.parseInt(attributes.exitCode, 10) }
+        : {}),
     };
     this.emitter.emit("update", update);
   }

@@ -140,6 +140,55 @@ describe("LogSession (backpressure)", () => {
     expect(source.destroyed).toBe(1);
   });
 
+  it("end() drena la cola pendiente antes de cerrar (no descarta el tail sin avisar)", async () => {
+    const sent: LogsBatch[] = [];
+    let closed = false;
+    const session = new LogSession(
+      options({ batchSize: 3 }),
+      async (batch) => {
+        sent.push(batch);
+      },
+      () => {
+        closed = true;
+      },
+    );
+
+    for (let i = 0; i < 7; i++) session.push(line(i));
+    session.end(); // la fuente terminó, pero todavía hay 7 líneas en cola
+    await new Promise((r) => setImmediate(r));
+    await new Promise((r) => setImmediate(r));
+
+    expect(sent.flatMap((b) => b.lines)).toHaveLength(7);
+    expect(closed).toBe(true);
+    expect(session.isClosed).toBe(true);
+  });
+
+  it("end() con la cola ya vacía cierra de inmediato", async () => {
+    let closed = false;
+    const session = new LogSession(
+      options(),
+      async () => {},
+      () => {
+        closed = true;
+      },
+    );
+
+    session.end();
+
+    expect(closed).toBe(true);
+  });
+
+  it("end() es un no-op si ya estaba cerrada", async () => {
+    const session = new LogSession(
+      options(),
+      async () => {},
+      () => {},
+    );
+    session.close();
+    expect(() => session.end()).not.toThrow();
+    expect(session.isClosed).toBe(true);
+  });
+
   it("close() es idempotente y no emite nada más", async () => {
     const sent: LogsBatch[] = [];
     const session = new LogSession(

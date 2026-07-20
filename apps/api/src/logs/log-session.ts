@@ -39,6 +39,7 @@ export class LogSession {
   private paused = false;
   private sending = false;
   private closed = false;
+  private ending = false;
   private source: LogSource | null = null;
 
   constructor(
@@ -67,6 +68,18 @@ export class LogSession {
       this.source?.pause();
     }
     void this.flush();
+  }
+
+  // Fin natural de la fuente (el contenedor dejó de loguear): a diferencia de
+  // close(), NO tira la cola pendiente — la termina de drenar y recién ahí
+  // cierra. close() es para cancelaciones (unsubscribe/socket caído), donde
+  // descartar lo que quede en cola es lo correcto porque el cliente ya no
+  // quiere más datos.
+  end(): void {
+    if (this.closed || this.ending) return;
+    this.ending = true;
+    this.source = null;
+    this.maybeFinishEnding();
   }
 
   close(): void {
@@ -103,6 +116,13 @@ export class LogSession {
       this.close();
     } finally {
       this.sending = false;
+      this.maybeFinishEnding();
+    }
+  }
+
+  private maybeFinishEnding(): void {
+    if (this.ending && !this.sending && this.queue.length === 0 && !this.closed) {
+      this.close();
     }
   }
 }

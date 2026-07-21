@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useTranslations } from "next-intl";
+
 import { LogViewer } from "@/components/log-viewer";
 import { MetricsPanel } from "@/components/metrics-panel";
 import { RestartButton } from "@/components/restart-button";
@@ -10,6 +12,7 @@ type PanelTab = "metrics" | "logs";
 
 // Panel del contenedor seleccionado: métricas (REST) y logs en vivo (WS).
 export function ContainerPanel({ container, onClose }: { container: string; onClose: () => void }) {
+  const t = useTranslations("containerPanel");
   const [tab, setTab] = useState<PanelTab>("metrics");
 
   return (
@@ -17,12 +20,12 @@ export function ContainerPanel({ container, onClose }: { container: string; onCl
       <header className="flex items-center justify-between border-b border-cci-line px-4 py-2">
         <h2 className="flex min-w-0 items-center gap-3 font-mono text-xs">
           <span className="truncate text-cci-text">{container}</span>
-          <nav className="flex gap-1" aria-label="Vista del contenedor">
+          <nav className="flex gap-1" aria-label={t("viewLabel")}>
             <TabButton active={tab === "metrics"} onClick={() => setTab("metrics")}>
-              métricas
+              {t("tabMetrics")}
             </TabButton>
             <TabButton active={tab === "logs"} onClick={() => setTab("logs")}>
-              logs
+              {t("tabLogs")}
             </TabButton>
           </nav>
         </h2>
@@ -33,7 +36,7 @@ export function ContainerPanel({ container, onClose }: { container: string; onCl
             onClick={onClose}
             className="rounded-cci px-2 py-1 font-mono text-xs text-cci-muted transition-colors hover:bg-cci-surface-2 hover:text-cci-text"
           >
-            cerrar ✕
+            {t("close")}
           </button>
         </div>
       </header>

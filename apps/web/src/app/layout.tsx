@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
 import type { ReactNode } from "react";
 
@@ -35,11 +37,19 @@ export const viewport: Viewport = {
   themeColor: "#0B0B0E",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="es" className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang={locale}
+      className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="flex min-h-dvh flex-col">
-        <main className="flex-1">{children}</main>
+        <NextIntlClientProvider messages={messages}>
+          <main className="flex-1">{children}</main>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

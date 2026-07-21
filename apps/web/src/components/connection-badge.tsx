@@ -1,22 +1,26 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import type { ConnectionStatus } from "@/lib/live/live-provider";
 
-const LABELS: Record<ConnectionStatus, { text: string; dot: string }> = {
-  connecting: { text: "conectando…", dot: "bg-cci-slate" },
-  live: { text: "en vivo", dot: "bg-cci-success" },
-  reconnecting: { text: "reconectando…", dot: "bg-cci-warn" },
+const DOT: Record<ConnectionStatus, string> = {
+  connecting: "bg-cci-slate",
+  live: "bg-cci-success",
+  reconnecting: "bg-cci-warn",
 };
 
 export function ConnectionBadge({ status }: { status: ConnectionStatus }) {
-  const { text, dot } = LABELS[status];
+  const t = useTranslations("connection");
   return (
     <span
       className="inline-flex items-center gap-2 rounded-cci border border-cci-line bg-cci-surface px-3 py-1.5 font-mono text-xs text-cci-muted"
       role="status"
     >
       <span
-        className={`h-2 w-2 rounded-full ${dot} ${status !== "connecting" ? "" : "animate-pulse"}`}
+        className={`h-2 w-2 rounded-full ${DOT[status]} ${status !== "connecting" ? "" : "animate-pulse"}`}
       />
-      {text}
+      {t(status)}
     </span>
   );
 }

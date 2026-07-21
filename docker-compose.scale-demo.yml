@@ -1,0 +1,20 @@
+# Override SOLO para demostrar el adapter de Redis del gateway con 2+
+# réplicas (B-09). No usar en operación normal — ver el ADR en
+# _aprendizaje/core-dashboard/docs/decisions/ sobre por qué escalar el api
+# duplica temporalmente watchers/cron/alertas mientras dura la demo.
+#
+# Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.scale-demo.yml \
+#     up -d --scale api=2
+#
+# El puerto fijo 3004:3000 del compose base no sirve con 2+ réplicas (dos
+# contenedores no pueden publicar el mismo puerto de host); este override lo
+# reemplaza por un rango: compose asigna un puerto distinto a cada réplica,
+# así se puede conectar un cliente a CADA UNA por separado y comprobar que
+# el evento publicado en una llega al cliente conectado en la otra.
+#
+# Volver a una sola réplica sin este override:
+#   docker compose up -d --scale api=1
+services:
+  api:
+    ports: ["3010-3011:3000"]

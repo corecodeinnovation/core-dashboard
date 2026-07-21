@@ -1,0 +1,70 @@
+{
+  "dashboard": {
+    "subtitleCount": "{count} servicios · {running} en ejecución",
+    "subtitleWaiting": "esperando estado del homelab…"
+  },
+  "connection": {
+    "connecting": "conectando…",
+    "live": "en vivo",
+    "reconnecting": "reconectando…"
+  },
+  "serviceCard": {
+    "uptime": "activo {uptime}",
+    "status": {
+      "created": "creado",
+      "running": "activo",
+      "paused": "pausado",
+      "restarting": "reiniciando",
+      "exited": "detenido",
+      "dead": "caído",
+      "healthy": "saludable",
+      "unhealthy": "con fallas",
+      "starting": "iniciando"
+    }
+  },
+  "containerPanel": {
+    "tabMetrics": "métricas",
+    "tabLogs": "logs",
+    "viewLabel": "Vista del contenedor",
+    "close": "cerrar ✕"
+  },
+  "metricsPanel": {
+    "tabCpu": "cpu",
+    "tabRam": "ram",
+    "tabNet": "red",
+    "loading": "cargando…",
+    "empty": "sin datos en este rango todavía",
+    "error": "no se pudieron cargar las métricas"
+  },
+  "logViewer": {
+    "waiting": "esperando logs…",
+    "lineCount": "{count} líneas",
+    "scrollPaused": "scroll pausado",
+    "dropped": "{count} descartadas (backpressure)"
+  },
+  "restartButton": {
+    "idle": "reiniciar",
+    "confirm": "¿confirmar?",
+    "pending": "reiniciando…",
+    "done": "✓ reiniciado",
+    "error": "✗ error",
+    "genericError": "no se pudo reiniciar"
+  },
+  "userMenu": {
+    "login": "iniciar sesión",
+    "logout": "salir"
+  },
+  "loginModal": {
+    "title": "Iniciar sesión",
+    "close": "✕",
+    "emailLabel": "email",
+    "passwordLabel": "password",
+    "submit": "entrar",
+    "submitting": "…",
+    "twoFactorHint": "código de la app autenticadora",
+    "codeLabel": "código",
+    "verify": "verificar",
+    "loginError": "no se pudo iniciar sesión",
+    "codeError": "código inválido"
+  }
+}

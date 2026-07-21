@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import type { ServiceState } from "@core-dashboard/shared";
 
 import { formatUptime, statusLabel, statusTone, type StatusTone } from "@/lib/live/state";
@@ -25,6 +29,7 @@ export function ServiceCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const t = useTranslations("serviceCard");
   const tone = statusTone(state.status, state.health);
   const uptime = formatUptime(state.startedAt, now);
 
@@ -55,8 +60,10 @@ export function ServiceCard({
         {state.image}
       </p>
       <footer className="flex items-center justify-between font-mono text-xs">
-        <span className={TONE_TEXT[tone]}>{statusLabel(state.status, state.health)}</span>
-        <span className="text-cci-muted">{uptime ? `up ${uptime}` : "—"}</span>
+        <span className={TONE_TEXT[tone]}>
+          {t(`status.${statusLabel(state.status, state.health)}`)}
+        </span>
+        <span className="text-cci-muted">{uptime ? t("uptime", { uptime }) : "—"}</span>
       </footer>
     </article>
   );

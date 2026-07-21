@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { hasRole } from "@core-dashboard/shared";
+import { useTranslations } from "next-intl";
 
 import { ActionApiError, restartContainer } from "@/lib/actions/api";
 import { useAuth } from "@/lib/auth/auth-provider";
@@ -14,6 +15,7 @@ const CONFIRM_TIMEOUT_MS = 3_000;
 // RF-07: acción destructiva, solo operator+. Doble click (pedir → confirmar)
 // en vez de un confirm() nativo — no bloquea el hilo ni se ve tosco.
 export function RestartButton({ container }: { container: string }) {
+  const t = useTranslations("restartButton");
   const { user, accessToken } = useAuth();
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -35,18 +37,11 @@ export function RestartButton({ container }: { container: string }) {
       setTimeout(() => setStatus("idle"), CONFIRM_TIMEOUT_MS);
     } catch (err) {
       setStatus("error");
-      setMessage(err instanceof ActionApiError ? err.message : "no se pudo reiniciar");
+      setMessage(err instanceof ActionApiError ? err.message : t("genericError"));
       setTimeout(() => setStatus("idle"), CONFIRM_TIMEOUT_MS);
     }
   };
 
-  const label = {
-    idle: "reiniciar",
-    confirm: "¿confirmar?",
-    pending: "reiniciando…",
-    done: "✓ reiniciado",
-    error: "✗ error",
-  }[status];
   const tone =
     status === "error"
       ? "border-cci-danger text-cci-danger"
@@ -65,7 +60,7 @@ export function RestartButton({ container }: { container: string }) {
         title={message ?? undefined}
         className={`rounded-cci border px-2.5 py-1 font-mono text-[11px] transition-colors disabled:opacity-60 ${tone}`}
       >
-        {label}
+        {t(status)}
       </button>
     </span>
   );

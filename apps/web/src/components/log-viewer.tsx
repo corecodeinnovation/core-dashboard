@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useTranslations } from "next-intl";
+
 import { useContainerLogs } from "@/lib/live/use-container-logs";
 
 // Anclado al fondo: si el usuario scrollea hacia arriba, se deja de seguir
@@ -9,6 +11,7 @@ import { useContainerLogs } from "@/lib/live/use-container-logs";
 const PIN_THRESHOLD_PX = 40;
 
 export function LogViewer({ container }: { container: string }) {
+  const t = useTranslations("logViewer");
   const { lines, dropped, error } = useContainerLogs(container);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [pinned, setPinned] = useState(true);
@@ -31,7 +34,7 @@ export function LogViewer({ container }: { container: string }) {
         {error ? (
           <p className="font-mono text-xs text-cci-danger">{error}</p>
         ) : lines.length === 0 ? (
-          <p className="font-mono text-xs text-cci-muted">esperando logs…</p>
+          <p className="font-mono text-xs text-cci-muted">{t("waiting")}</p>
         ) : (
           <ol className="font-mono text-xs leading-5">
             {lines.map((line, index) => (
@@ -47,10 +50,10 @@ export function LogViewer({ container }: { container: string }) {
       </div>
       <footer className="flex items-center justify-between border-t border-cci-line px-4 py-1.5 font-mono text-[11px] text-cci-slate">
         <span>
-          {lines.length} líneas
-          {!pinned && <span className="text-cci-warn"> · scroll pausado</span>}
+          {t("lineCount", { count: lines.length })}
+          {!pinned && <span className="text-cci-warn"> · {t("scrollPaused")}</span>}
         </span>
-        {dropped > 0 && <span className="text-cci-warn">{dropped} descartadas (backpressure)</span>}
+        {dropped > 0 && <span className="text-cci-warn">{t("dropped", { count: dropped })}</span>}
       </footer>
     </div>
   );

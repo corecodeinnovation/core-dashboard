@@ -1,0 +1,70 @@
+{
+  "dashboard": {
+    "subtitleCount": "{count} services · {running} running",
+    "subtitleWaiting": "waiting for homelab state…"
+  },
+  "connection": {
+    "connecting": "connecting…",
+    "live": "live",
+    "reconnecting": "reconnecting…"
+  },
+  "serviceCard": {
+    "uptime": "up {uptime}",
+    "status": {
+      "created": "created",
+      "running": "running",
+      "paused": "paused",
+      "restarting": "restarting",
+      "exited": "stopped",
+      "dead": "dead",
+      "healthy": "healthy",
+      "unhealthy": "unhealthy",
+      "starting": "starting"
+    }
+  },
+  "containerPanel": {
+    "tabMetrics": "metrics",
+    "tabLogs": "logs",
+    "viewLabel": "Container view",
+    "close": "close ✕"
+  },
+  "metricsPanel": {
+    "tabCpu": "cpu",
+    "tabRam": "ram",
+    "tabNet": "net",
+    "loading": "loading…",
+    "empty": "no data for this range yet",
+    "error": "couldn't load metrics"
+  },
+  "logViewer": {
+    "waiting": "waiting for logs…",
+    "lineCount": "{count} lines",
+    "scrollPaused": "scroll paused",
+    "dropped": "{count} dropped (backpressure)"
+  },
+  "restartButton": {
+    "idle": "restart",
+    "confirm": "confirm?",
+    "pending": "restarting…",
+    "done": "✓ restarted",
+    "error": "✗ error",
+    "genericError": "couldn't restart"
+  },
+  "userMenu": {
+    "login": "log in",
+    "logout": "log out"
+  },
+  "loginModal": {
+    "title": "Log in",
+    "close": "✕",
+    "emailLabel": "email",
+    "passwordLabel": "password",
+    "submit": "sign in",
+    "submitting": "…",
+    "twoFactorHint": "code from your authenticator app",
+    "codeLabel": "code",
+    "verify": "verify",
+    "loginError": "couldn't log in",
+    "codeError": "invalid code"
+  }
+}

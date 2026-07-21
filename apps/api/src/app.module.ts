@@ -9,6 +9,7 @@ import { GatewayModule } from "./gateway/gateway.module";
 import { HealthController } from "./health/health.controller";
 import { JobsModule } from "./jobs/jobs.module";
 import { MetricsModule } from "./metrics/metrics.module";
+import { RetentionModule } from "./retention/retention.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MetricsModule } from "./metrics/metrics.module";
     ActionsModule,
     AuditModule,
     JobsModule,
+    RetentionModule,
   ],
   controllers: [HealthController],
 })

@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 import { ConnectionBadge } from "@/components/connection-badge";
 import { ContainerPanel } from "@/components/container-panel";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ServiceCard } from "@/components/service-card";
 import { UserMenu } from "@/components/user-menu";
 import { AuthProvider } from "@/lib/auth/auth-provider";
@@ -25,6 +27,7 @@ export function LiveDashboard() {
 }
 
 function DashboardContent() {
+  const t = useTranslations("dashboard");
   const { services, status } = useLive();
   const [now, setNow] = useState(() => Date.now());
   const [selected, setSelected] = useState<string | null>(null);
@@ -46,11 +49,12 @@ function DashboardContent() {
           </h1>
           <p className="mt-1 font-mono text-xs text-cci-muted">
             {services.length > 0
-              ? `${services.length} servicios · ${running} en ejecución`
-              : "esperando estado del homelab…"}
+              ? t("subtitleCount", { count: services.length, running })
+              : t("subtitleWaiting")}
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <LocaleSwitcher />
           <UserMenu />
           <ConnectionBadge status={status} />
         </div>

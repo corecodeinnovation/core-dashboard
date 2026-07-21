@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useTranslations } from "next-intl";
+
 import { useQuery } from "@tanstack/react-query";
 import {
   CartesianGrid,
@@ -31,22 +33,24 @@ interface SeriesDef {
   dash?: string;
 }
 
+// El label del tab sale de i18n (metricsPanel.tab*); rx/tx/cpu/ram son
+// abreviaturas técnicas iguales en cualquier idioma, no se traducen.
 const TABS: Record<
   MetricTab,
-  { label: string; series: SeriesDef[]; format: (v: number) => string }
+  { messageKey: "tabCpu" | "tabRam" | "tabNet"; series: SeriesDef[]; format: (v: number) => string }
 > = {
   cpu: {
-    label: "cpu",
+    messageKey: "tabCpu",
     series: [{ kind: "CPU", label: "cpu", stroke: "var(--cci-slate)" }],
     format: formatCores,
   },
   ram: {
-    label: "ram",
+    messageKey: "tabRam",
     series: [{ kind: "MEMORY", label: "ram", stroke: "var(--cci-slate)" }],
     format: formatBytes,
   },
   red: {
-    label: "red",
+    messageKey: "tabNet",
     // Par diferenciado por trazo además del color (encoding secundario).
     series: [
       { kind: "NETWORK_RX", label: "rx", stroke: "var(--cci-amber)" },
@@ -73,6 +77,7 @@ function mergeSeries(series: Array<{ kind: MetricKind; points: MetricPoint[] }>)
 }
 
 export function MetricsPanel({ container }: { container: string }) {
+  const t = useTranslations("metricsPanel");
   const [tab, setTab] = useState<MetricTab>("cpu");
   const [range, setRange] = useState<MetricRange>("1h");
   const { series, format } = { series: TABS[tab].series, format: TABS[tab].format };
@@ -100,7 +105,7 @@ export function MetricsPanel({ container }: { container: string }) {
         <div className="flex gap-1">
           {(Object.keys(TABS) as MetricTab[]).map((id) => (
             <SelectorButton key={id} active={id === tab} onClick={() => setTab(id)}>
-              {TABS[id].label}
+              {t(TABS[id].messageKey)}
             </SelectorButton>
           ))}
         </div>
@@ -137,12 +142,10 @@ export function MetricsPanel({ container }: { container: string }) {
 
       <div className="h-56 px-2 pb-2 pt-3">
         {query.isError ? (
-          <p className="px-2 font-mono text-xs text-cci-danger">
-            no se pudieron cargar las métricas
-          </p>
+          <p className="px-2 font-mono text-xs text-cci-danger">{t("error")}</p>
         ) : rows.length === 0 ? (
           <p className="px-2 font-mono text-xs text-cci-muted">
-            {query.isLoading ? "cargando…" : "sin datos en este rango todavía"}
+            {query.isLoading ? t("loading") : t("empty")}
           </p>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

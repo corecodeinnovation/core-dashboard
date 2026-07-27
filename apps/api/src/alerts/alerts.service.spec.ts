@@ -131,7 +131,7 @@ describe("AlertsService", () => {
     expect(notifyBot.sendContainerDown).not.toHaveBeenCalled();
   });
 
-  it.each(["start", "stop", "kill", "pause", "unpause", "health_status"] as const)(
+  it.each(["stop", "kill", "pause", "unpause", "health_status"] as const)(
     "acción %s (ni die ni restart) ⇒ no notifica nada",
     async (action) => {
       const { emit, notifyBot } = harness();
@@ -141,6 +141,49 @@ describe("AlertsService", () => {
       expect(notifyBot.sendContainerRestarted).not.toHaveBeenCalled();
     },
   );
+
+  it("primer start visto de un contenedor (arranque inicial) ⇒ no notifica nada", async () => {
+    const { emit, notifyBot } = harness();
+    emit(update({ action: "start" }));
+    await flushCoalesceWindow();
+    expect(notifyBot.sendContainerDown).not.toHaveBeenCalled();
+    expect(notifyBot.sendContainerRestarted).not.toHaveBeenCalled();
+  });
+
+  it("redeploy (die + start del contenedor recreado, sin evento restart) ⇒ notifica reiniciado", async () => {
+    const { emit, notifyBot } = harness();
+    emit(update({ action: "start" })); // arranque inicial, establece el baseline
+    await flushCoalesceWindow();
+    notifyBot.sendContainerRestarted.mockClear();
+
+    emit(update({ action: "die", exitCode: 0 })); // stop del contenedor viejo
+    await jest.advanceTimersByTimeAsync(50); // el nuevo contenedor arranca rápido
+    emit(update({ action: "start" })); // start del contenedor recreado
+    await flushCoalesceWindow();
+
+    expect(notifyBot.sendContainerRestarted).toHaveBeenCalledWith({
+      container: "core-dashboard-worker-1",
+    });
+    expect(notifyBot.sendContainerDown).not.toHaveBeenCalled();
+  });
+
+  it("redeploy lento (start llega después de la ventana de coalescing) ⇒ notifica caído y luego reiniciado", async () => {
+    const { emit, notifyBot } = harness();
+    emit(update({ action: "start" })); // arranque inicial, establece el baseline
+    await flushCoalesceWindow();
+    notifyBot.sendContainerRestarted.mockClear();
+
+    emit(update({ action: "die", exitCode: 0 }));
+    await flushCoalesceWindow(); // se agota la ventana: se manda "caído"
+    emit(update({ action: "start" }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(notifyBot.sendContainerDown).toHaveBeenCalledTimes(1);
+    expect(notifyBot.sendContainerRestarted).toHaveBeenCalledWith({
+      container: "core-dashboard-worker-1",
+    });
+  });
 
   it("cada acción consulta su propia clave de AlertSetting", async () => {
     const { emit, prisma } = harness();

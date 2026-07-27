@@ -30,6 +30,7 @@ export class AlertsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AlertsService.name);
   private readonly lastAlertAt = new Map<string, number>();
   private readonly pendingDieAlerts = new Map<string, NodeJS.Timeout>();
+  private readonly seenContainers = new Set<string>();
 
   constructor(
     private readonly containers: ContainersService,
@@ -51,9 +52,9 @@ export class AlertsService implements OnModuleInit, OnModuleDestroy {
       this.scheduleDieAlert(update.state.name, update.exitCode);
       return;
     }
-    if (update.action === "restart") {
-      // Si había un "caído" pendiente por este mismo restart, se cancela:
-      // el aviso único y correcto es "reiniciado".
+    if (update.action === "restart" || this.isRedeployStart(update)) {
+      // Si había un "caído" pendiente por este mismo restart/redeploy, se
+      // cancela: el aviso único y correcto es "reiniciado".
       this.cancelPendingDieAlert(update.state.name);
       void this.maybeAlert(
         "restart",
@@ -63,6 +64,19 @@ export class AlertsService implements OnModuleInit, OnModuleDestroy {
         "reiniciado",
       );
     }
+  }
+
+  // `docker compose up --build` no dispara `restart` (ese evento solo lo
+  // emite un `docker restart` sobre el mismo container id): recrea el
+  // contenedor, así que lo que llega es `die` del viejo + `start` del nuevo.
+  // Tratamos ese `start` como "reiniciado" salvo que sea el primer arranque
+  // que vemos de este contenedor — el arranque inicial del stack no es un
+  // redeploy y no debería alertar.
+  private isRedeployStart(update: ServiceUpdate): boolean {
+    if (update.action !== "start") return false;
+    const alreadySeen = this.seenContainers.has(update.state.name);
+    this.seenContainers.add(update.state.name);
+    return alreadySeen;
   }
 
   private scheduleDieAlert(containerName: string, exitCode: number | undefined): void {

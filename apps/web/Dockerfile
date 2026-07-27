@@ -15,6 +15,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # ⇒ el cliente usa el mismo origen y cloudflared rutea /socket.io/* al api.
 ARG NEXT_PUBLIC_API_WS_URL=http://localhost:3004
 ENV NEXT_PUBLIC_API_WS_URL=$NEXT_PUBLIC_API_WS_URL
+# Destino server-side de los rewrites /api/* (next.config.ts): next build
+# hornea esto en .next/routes-manifest.json, NO se lee en runtime pese a
+# venir de una env var — sin este ARG, "api" cae al default ambiguo (varios
+# repos del portfolio nombran su servicio "api" en la red `edge` compartida).
+ARG API_INTERNAL_URL=http://api:3000
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
 RUN npm run build -w apps/web
 
 # Runtime mínimo con output standalone; en monorepo el server queda en apps/web/server.js.

@@ -11,6 +11,7 @@ import {
 import {
   LIVE_NAMESPACE,
   serviceRoom,
+  type AlertType,
   type ClientToServerEvents,
   type LogsAck,
   type ServerToClientEvents,
@@ -130,6 +131,13 @@ export class LiveGateway implements OnGatewayInit, OnGatewayDisconnect, OnModule
     // Un evento Docker puede llegar antes de que el servidor WS esté inicializado.
     if (!this.server) return;
     this.server.to(serviceRoom(update.service)).emit("state:update", update);
+  }
+
+  // Feed de alertas (RF-14): sin room, es información pública ambiental —
+  // llega a todos los clientes conectados, no por-servicio.
+  publishAlert(type: AlertType): void {
+    if (!this.server) return;
+    this.server.emit("alerts:new", { type });
   }
 
   private sanitizeServices(input: unknown): string[] {

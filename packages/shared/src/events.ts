@@ -1,3 +1,4 @@
+import type { AlertType } from "./alerts";
 import type { AuthUser } from "./auth";
 
 export const LIVE_NAMESPACE = "/live";
@@ -79,6 +80,11 @@ export interface ServerToClientEvents {
   // Flow control por ack: el server no emite el siguiente batch hasta que el
   // cliente confirma este (backpressure extremo a extremo).
   "logs:batch": (batch: LogsBatch, ack: () => void) => void;
+  // Push del feed de alertas (RF-14): el api poll-ea ops-notify-bot una sola
+  // vez server-side y reenvía a todos los clientes — sin room, es información
+  // pública ambiental, no por-servicio. Payload liviano a propósito: el
+  // cliente decide si le importa (filtro activo) y refetch por REST.
+  "alerts:new": (event: { type: AlertType }) => void;
 }
 
 export interface ClientToServerEvents {

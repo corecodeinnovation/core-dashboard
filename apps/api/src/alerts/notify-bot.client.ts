@@ -1,4 +1,5 @@
 import { Injectable, Logger, ServiceUnavailableException } from "@nestjs/common";
+import type { AlertType } from "@core-dashboard/shared";
 
 export interface ContainerDownEvent {
   type: "container_down";
@@ -12,11 +13,6 @@ export interface ContainerRestartedEvent {
 }
 
 type WebhookEvent = ContainerDownEvent | ContainerRestartedEvent;
-
-// Tipos de alerta que expone GET /alerts (todo WebhookEvent salvo "contact",
-// ver ops-notify-bot/src/alerts/types.ts).
-export type AlertType =
-  "deploy" | "resource_alert" | "container_down" | "container_restarted" | "job_dlq";
 
 export interface AlertItem {
   id: string;

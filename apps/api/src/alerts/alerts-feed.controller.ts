@@ -1,6 +1,7 @@
 import { BadRequestException, Controller, Get, Query } from "@nestjs/common";
+import type { AlertType } from "@core-dashboard/shared";
 
-import { AlertsPage, AlertType, NotifyBotClient } from "./notify-bot.client";
+import { AlertsPage, NotifyBotClient } from "./notify-bot.client";
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;

@@ -1,12 +1,6 @@
-export const ALERT_TYPES = [
-  "deploy",
-  "resource_alert",
-  "container_down",
-  "container_restarted",
-  "job_dlq",
-] as const;
+import { ALERT_TYPES, type AlertType } from "@core-dashboard/shared";
 
-export type AlertType = (typeof ALERT_TYPES)[number];
+export { ALERT_TYPES, type AlertType };
 
 export interface AlertItem {
   id: string;

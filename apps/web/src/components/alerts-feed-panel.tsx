@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
+import { useLive } from "@/lib/live/live-provider";
 import { AlertItem, ALERT_TYPES, AlertsApiError, AlertType, fetchAlerts } from "@/lib/alerts/api";
 
 const PAGE_SIZE = 20;
-const REFRESH_MS = 15_000;
+// Solo red de contención: lo normal es que "alerts:new" (WS) dispare el
+// refetch mucho antes. Cubre el caso de un evento perdido o socket caído.
+const FALLBACK_REFRESH_MS = 60_000;
 
 const TYPE_TONE: Record<AlertType, string> = {
   deploy: "text-cci-slate",
@@ -59,14 +62,41 @@ function useSummary(): (alert: AlertItem) => string {
 export function AlertsFeedPanel() {
   const t = useTranslations("alertsFeed");
   const summarize = useSummary();
+  const { socket, status } = useLive();
+  const queryClient = useQueryClient();
   const [type, setType] = useState<AlertType | "">("");
   const [offset, setOffset] = useState(0);
 
+  const queryKey = ["alerts-feed", type, offset];
   const query = useQuery({
-    queryKey: ["alerts-feed", type, offset],
+    queryKey,
     queryFn: () => fetchAlerts({ type: type || undefined, limit: PAGE_SIZE, offset }),
-    refetchInterval: REFRESH_MS,
+    refetchInterval: FALLBACK_REFRESH_MS,
   });
+
+  // Push del gateway (RF-14, único evento sin room — ver LiveGateway.publishAlert):
+  // solo refetchea si afecta la página que se está viendo (primera página, sin
+  // filtro o con el filtro que matchea). Refetch por REST en vez de mergear a
+  // mano — la paginación/filtro quedan siempre consistentes con el server.
+  useEffect(() => {
+    if (!socket) return;
+    const onNewAlert = ({ type: incoming }: { type: AlertType }): void => {
+      if (offset === 0 && (type === "" || type === incoming)) {
+        void queryClient.invalidateQueries({ queryKey });
+      }
+    };
+    socket.on("alerts:new", onNewAlert);
+    return () => {
+      socket.off("alerts:new", onNewAlert);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, type, offset]);
+
+  // Resync al reconectar: mismo criterio que el resto del gateway (RF-03).
+  useEffect(() => {
+    if (status === "live") void queryClient.invalidateQueries({ queryKey });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   const total = query.data?.total ?? 0;
   const items = query.data?.items ?? [];

@@ -86,6 +86,45 @@ describe("TaskforgeClient", () => {
     expect(tokenCalls).toHaveLength(1);
   });
 
+  it("single-flight: N llamadas concurrentes con el caché vacío piden un solo token (RF-13, taskforge-status)", async () => {
+    fetchMock.mockResolvedValueOnce(tokenResponse());
+    for (let i = 0; i < 8; i++) {
+      fetchMock.mockResolvedValueOnce(jobResponse({ total: 0, limit: 1, offset: 0, items: [] }));
+    }
+
+    const client = new TaskforgeClient();
+    // Simula los 8 listJobs() en paralelo de TaskforgeStatusService.getStatus().
+    await Promise.all(
+      Array.from({ length: 8 }, () => client.listJobs({ state: "queued", limit: 1 })),
+    );
+
+    const tokenCalls = fetchMock.mock.calls.filter(
+      (call) => (call[0] as URL).toString() === "http://cci-auth-service:3000/oauth/token",
+    );
+    expect(tokenCalls).toHaveLength(1);
+  });
+
+  it("single-flight: si el token falla, las llamadas concurrentes fallan pero no duplican el pedido", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 429,
+      text: async () => '{"statusCode":429,"message":"Demasiadas peticiones, intenta más tarde"}',
+    } as unknown as Response);
+
+    const client = new TaskforgeClient();
+    const results = await Promise.allSettled([
+      client.listJobs(),
+      client.listJobs(),
+      client.listJobs(),
+    ]);
+
+    expect(results.every((r) => r.status === "rejected")).toBe(true);
+    const tokenCalls = fetchMock.mock.calls.filter(
+      (call) => (call[0] as URL).toString() === "http://cci-auth-service:3000/oauth/token",
+    );
+    expect(tokenCalls).toHaveLength(1);
+  });
+
   it("token vencido (dentro del margen) ⇒ pide uno nuevo", async () => {
     fetchMock
       .mockResolvedValueOnce(tokenResponse(10)) // expira en 10s, margen es 30s ⇒ ya "vencido"

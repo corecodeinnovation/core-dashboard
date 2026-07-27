@@ -61,6 +61,12 @@ const TOKEN_REFRESH_MARGIN_MS = 30_000;
 export class TaskforgeClient {
   private readonly logger = new Logger(TaskforgeClient.name);
   private cachedToken: CachedToken | null = null;
+  // Single-flight: sin esto, N llamadas concurrentes con el caché vencido
+  // (p. ej. los 8 listJobs() en paralelo de TaskforgeStatusService) disparan
+  // N POST /oauth/token simultáneos y topan el rate limit de cci-auth-service
+  // (20/60s por IP) — y si ese burst ya lo topa, el caché nunca se llena y el
+  // próximo poll repite el burst indefinidamente.
+  private pendingToken: Promise<string> | null = null;
 
   async enqueueDemoJob(steps: number): Promise<EnqueuedJob> {
     const token = await this.getAccessToken();
@@ -103,7 +109,14 @@ export class TaskforgeClient {
     if (this.cachedToken && this.cachedToken.expiresAt - now > TOKEN_REFRESH_MARGIN_MS) {
       return this.cachedToken.accessToken;
     }
+    // Ya hay un pedido de token en curso: esperar ese mismo, no lanzar otro.
+    this.pendingToken ??= this.fetchAccessToken(now).finally(() => {
+      this.pendingToken = null;
+    });
+    return this.pendingToken;
+  }
 
+  private async fetchAccessToken(now: number): Promise<string> {
     const clientId = process.env.TASKFORGE_CLIENT_ID;
     const clientSecret = process.env.TASKFORGE_CLIENT_SECRET;
     const authUrl = process.env.AUTH_SERVICE_URL;

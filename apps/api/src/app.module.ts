@@ -6,7 +6,7 @@ import { AlertsModule } from "./alerts/alerts.module";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { GatewayModule } from "./gateway/gateway.module";
-import { HealthController } from "./health/health.controller";
+import { HealthModule } from "./health/health.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { MetricsModule } from "./metrics/metrics.module";
 import { RetentionModule } from "./retention/retention.module";
@@ -26,7 +26,7 @@ import { TaskforgeStatusModule } from "./taskforge-status/taskforge-status.modul
     RetentionModule,
     SecurityAuditModule,
     TaskforgeStatusModule,
+    HealthModule,
   ],
-  controllers: [HealthController],
 })
 export class AppModule {}

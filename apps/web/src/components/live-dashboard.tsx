@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 
 import { ConnectionBadge } from "@/components/connection-badge";
 import { ContainerPanel } from "@/components/container-panel";
+import { DependenciesBadge } from "@/components/dependencies-badge";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { SecurityAuditPanel } from "@/components/security-audit-panel";
 import { ServiceCard } from "@/components/service-card";
@@ -58,6 +59,7 @@ function DashboardContent() {
         <div className="flex items-center gap-3">
           <LocaleSwitcher />
           <UserMenu />
+          <DependenciesBadge />
           <ConnectionBadge status={status} />
         </div>
       </header>

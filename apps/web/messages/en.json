@@ -78,6 +78,13 @@
     "prev": "‹ prev",
     "next": "next ›"
   },
+  "dependenciesBadge": {
+    "name": {
+      "cci-auth-service": "auth",
+      "taskforge": "taskforge",
+      "ops-notify-bot": "notify"
+    }
+  },
   "taskforgeStatus": {
     "title": "Taskforge queue",
     "loading": "loading…",

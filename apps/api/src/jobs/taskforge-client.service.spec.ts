@@ -118,6 +118,30 @@ describe("TaskforgeClient", () => {
     expect(status).toEqual({ jobId: "j1", name: "x", state: "completed", result: { ok: true } });
   });
 
+  it("listJobs consulta GET /jobs con state y limit como query", async () => {
+    fetchMock
+      .mockResolvedValueOnce(tokenResponse())
+      .mockResolvedValueOnce(jobResponse({ total: 2, limit: 5, offset: 0, items: [] }));
+
+    const page = await new TaskforgeClient().listJobs({ state: "failed", limit: 5 });
+
+    const [url, init] = fetchMock.mock.calls[1]! as [URL, RequestInit];
+    expect(url.toString()).toBe("http://taskforge-api-1:3000/jobs?state=failed&limit=5");
+    expect(init.method).toBe("GET");
+    expect(page).toEqual({ total: 2, limit: 5, offset: 0, items: [] });
+  });
+
+  it("listJobs sin params consulta GET /jobs sin query string", async () => {
+    fetchMock
+      .mockResolvedValueOnce(tokenResponse())
+      .mockResolvedValueOnce(jobResponse({ total: 0, limit: 20, offset: 0, items: [] }));
+
+    await new TaskforgeClient().listJobs();
+
+    const [url] = fetchMock.mock.calls[1]! as [URL];
+    expect(url.toString()).toBe("http://taskforge-api-1:3000/jobs");
+  });
+
   it("sin credenciales configuradas ⇒ ServiceUnavailableException, no llama a fetch", async () => {
     delete process.env.TASKFORGE_CLIENT_ID;
     await expect(new TaskforgeClient().enqueueDemoJob(1)).rejects.toBeInstanceOf(

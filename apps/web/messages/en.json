@@ -66,5 +66,31 @@
     "verify": "verify",
     "loginError": "couldn't log in",
     "codeError": "invalid code"
+  },
+  "securityAudit": {
+    "title": "Security audit",
+    "allActions": "all actions",
+    "userIdPlaceholder": "user id",
+    "loading": "loading…",
+    "empty": "no events for these filters",
+    "error": "couldn't load the audit log",
+    "total": "{total} events",
+    "prev": "‹ prev",
+    "next": "next ›"
+  },
+  "taskforgeStatus": {
+    "title": "Taskforge queue",
+    "loading": "loading…",
+    "error": "couldn't load queue status",
+    "recentFailures": "recent failures",
+    "attempts": "{count} attempts",
+    "state": {
+      "queued": "queued",
+      "active": "active",
+      "delayed": "delayed",
+      "completed": "completed",
+      "failed": "failed",
+      "dlq": "dlq"
+    }
   }
 }

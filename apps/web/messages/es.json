@@ -66,5 +66,31 @@
     "verify": "verificar",
     "loginError": "no se pudo iniciar sesión",
     "codeError": "código inválido"
+  },
+  "securityAudit": {
+    "title": "Auditoría de seguridad",
+    "allActions": "todas las acciones",
+    "userIdPlaceholder": "id de usuario",
+    "loading": "cargando…",
+    "empty": "sin eventos con estos filtros",
+    "error": "no se pudo cargar el log de auditoría",
+    "total": "{total} eventos",
+    "prev": "‹ anterior",
+    "next": "siguiente ›"
+  },
+  "taskforgeStatus": {
+    "title": "Cola de taskforge",
+    "loading": "cargando…",
+    "error": "no se pudo cargar el estado de la cola",
+    "recentFailures": "últimos fallos",
+    "attempts": "{count} intentos",
+    "state": {
+      "queued": "en cola",
+      "active": "activos",
+      "delayed": "programados",
+      "completed": "completados",
+      "failed": "fallidos",
+      "dlq": "dlq"
+    }
   }
 }

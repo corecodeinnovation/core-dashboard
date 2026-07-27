@@ -8,7 +8,9 @@ import { useTranslations } from "next-intl";
 import { ConnectionBadge } from "@/components/connection-badge";
 import { ContainerPanel } from "@/components/container-panel";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { SecurityAuditPanel } from "@/components/security-audit-panel";
 import { ServiceCard } from "@/components/service-card";
+import { TaskforgeStatusPanel } from "@/components/taskforge-status-panel";
 import { UserMenu } from "@/components/user-menu";
 import { AuthProvider } from "@/lib/auth/auth-provider";
 import { LiveProvider, useLive } from "@/lib/live/live-provider";
@@ -78,6 +80,13 @@ function DashboardContent() {
             onSelect={() => setSelected(state.name === selected ? null : state.name)}
           />
         ))}
+      </div>
+
+      {/* Ecosistema: estado de taskforge y auditoría de cci-auth-service (RF-13).
+          Cada panel se oculta solo si el rol del usuario no alcanza. */}
+      <div className="mt-6 flex flex-col gap-4">
+        <TaskforgeStatusPanel />
+        <SecurityAuditPanel />
       </div>
     </section>
   );

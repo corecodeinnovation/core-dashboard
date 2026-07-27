@@ -14,6 +14,37 @@ export interface JobStatus {
   failedReason?: string;
 }
 
+// Estados públicos del ciclo de vida en taskforge (ver su README).
+export const TASKFORGE_JOB_STATES = [
+  "queued",
+  "active",
+  "delayed",
+  "completed",
+  "failed",
+  "dlq",
+] as const;
+export type TaskforgeJobState = (typeof TASKFORGE_JOB_STATES)[number];
+
+export interface JobRecordItem {
+  jobId: string;
+  queue: string;
+  name: string;
+  state: string;
+  priority: number | null;
+  attemptsMade: number;
+  failedReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  finishedAt: string | null;
+}
+
+export interface JobRecordPage {
+  total: number;
+  limit: number;
+  offset: number;
+  items: JobRecordItem[];
+}
+
 interface CachedToken {
   accessToken: string;
   expiresAt: number; // epoch ms
@@ -51,6 +82,20 @@ export class TaskforgeClient {
       method: "GET",
     });
     return response as JobStatus;
+  }
+
+  // Histórico crudo de taskforge (RF-13): usado para armar el vistazo de
+  // estado de la cola, no hay endpoint de agregados del lado de taskforge.
+  async listJobs(
+    params: { state?: TaskforgeJobState; limit?: number } = {},
+  ): Promise<JobRecordPage> {
+    const token = await this.getAccessToken();
+    const query = new URLSearchParams();
+    if (params.state) query.set("state", params.state);
+    if (params.limit !== undefined) query.set("limit", String(params.limit));
+    const qs = query.toString();
+    const response = await this.request(token, `/jobs${qs ? `?${qs}` : ""}`, { method: "GET" });
+    return response as JobRecordPage;
   }
 
   private async getAccessToken(): Promise<string> {

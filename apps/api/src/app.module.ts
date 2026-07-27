@@ -10,6 +10,8 @@ import { HealthController } from "./health/health.controller";
 import { JobsModule } from "./jobs/jobs.module";
 import { MetricsModule } from "./metrics/metrics.module";
 import { RetentionModule } from "./retention/retention.module";
+import { SecurityAuditModule } from "./security-audit/security-audit.module";
+import { TaskforgeStatusModule } from "./taskforge-status/taskforge-status.module";
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { RetentionModule } from "./retention/retention.module";
     AuditModule,
     JobsModule,
     RetentionModule,
+    SecurityAuditModule,
+    TaskforgeStatusModule,
   ],
   controllers: [HealthController],
 })

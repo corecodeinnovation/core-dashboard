@@ -9,5 +9,6 @@ import { TaskforgeClient } from "./taskforge-client.service";
   imports: [PrismaModule],
   controllers: [JobsController],
   providers: [TaskforgeClient, JobsService],
+  exports: [TaskforgeClient],
 })
 export class JobsModule {}

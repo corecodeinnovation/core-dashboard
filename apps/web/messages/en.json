@@ -78,6 +78,32 @@
     "prev": "‹ prev",
     "next": "next ›"
   },
+  "alertsFeed": {
+    "title": "Recent alerts",
+    "allTypes": "all types",
+    "loading": "loading…",
+    "empty": "no alerts for these filters",
+    "error": "couldn't load alerts",
+    "total": "{total} alerts",
+    "prev": "‹ prev",
+    "next": "next ›",
+    "type": {
+      "deploy": "deploy",
+      "resource_alert": "resources",
+      "container_down": "down",
+      "container_restarted": "restarted",
+      "job_dlq": "job in dlq"
+    },
+    "summary": {
+      "deployOk": "succeeded",
+      "deployFailed": "failed",
+      "deploy": "{service} · deploy {status}{version}",
+      "resourceAlert": "{host} · {metric} {value}% (threshold {threshold}%)",
+      "containerDown": "{container}{exitCode}",
+      "containerRestarted": "{container}",
+      "jobDlq": "{service}/{queue} · \"{name}\" exhausted {attempts} attempts — {reason}"
+    }
+  },
   "dependenciesBadge": {
     "name": {
       "cci-auth-service": "auth",

@@ -1,3 +1,5 @@
+import { ServiceUnavailableException } from "@nestjs/common";
+
 import { NotifyBotClient } from "./notify-bot.client";
 
 describe("NotifyBotClient", () => {
@@ -72,5 +74,61 @@ describe("NotifyBotClient", () => {
     await expect(
       new NotifyBotClient().sendContainerDown({ container: "x" }),
     ).resolves.toBeUndefined();
+  });
+
+  it("listAlerts pide GET /alerts con el secreto y los filtros como query", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ total: 1, items: [{ id: "a1", type: "container_down" }] }),
+    } as Response);
+
+    const page = await new NotifyBotClient().listAlerts({
+      limit: 20,
+      offset: 10,
+      type: "container_down",
+    });
+
+    const [url, init] = fetchMock.mock.calls[0]! as [URL, RequestInit];
+    expect(url.toString()).toBe(
+      "http://ops-notify-bot:3001/alerts?limit=20&offset=10&type=container_down",
+    );
+    expect((init.headers as Record<string, string>)["X-Webhook-Secret"]).toBe("s3cret");
+    expect(page).toEqual({ total: 1, items: [{ id: "a1", type: "container_down" }] });
+  });
+
+  it("listAlerts sin params consulta GET /alerts sin query string", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ total: 0, items: [] }),
+    } as Response);
+    await new NotifyBotClient().listAlerts();
+    const [url] = fetchMock.mock.calls[0]! as [URL];
+    expect(url.toString()).toBe("http://ops-notify-bot:3001/alerts");
+  });
+
+  it("listAlerts sin config ⇒ ServiceUnavailableException, no llama a fetch", async () => {
+    delete process.env.NOTIFY_BOT_URL;
+    await expect(new NotifyBotClient().listAlerts()).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("listAlerts respuesta no-ok ⇒ ServiceUnavailableException (a diferencia de send, sí propaga)", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: "unauthorized" }),
+    } as Response);
+    await expect(new NotifyBotClient().listAlerts()).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
+  });
+
+  it("listAlerts fetch rechazado ⇒ ServiceUnavailableException", async () => {
+    fetchMock.mockRejectedValue(new Error("ECONNREFUSED"));
+    await expect(new NotifyBotClient().listAlerts()).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
   });
 });

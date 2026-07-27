@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
+import { AlertsFeedPanel } from "@/components/alerts-feed-panel";
 import { ConnectionBadge } from "@/components/connection-badge";
 import { ContainerPanel } from "@/components/container-panel";
 import { DependenciesBadge } from "@/components/dependencies-badge";
@@ -84,11 +85,13 @@ function DashboardContent() {
         ))}
       </div>
 
-      {/* Ecosistema: estado de taskforge y auditoría de cci-auth-service (RF-13).
-          Cada panel se oculta solo si el rol del usuario no alcanza. */}
+      {/* Ecosistema: estado de taskforge, auditoría de cci-auth-service (RF-13)
+          y feed de alertas de ops-notify-bot (RF-14). Los primeros dos se
+          ocultan solos si el rol del usuario no alcanza; el feed es público. */}
       <div className="mt-6 flex flex-col gap-4">
         <TaskforgeStatusPanel />
         <SecurityAuditPanel />
+        <AlertsFeedPanel />
       </div>
     </section>
   );
